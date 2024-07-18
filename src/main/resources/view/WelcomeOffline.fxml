@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" styleClass="anchorpane" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+	<children>
+      <Label fx:id="lblNoSelect" alignment="CENTER" layoutX="139.0" layoutY="575.0" prefHeight="21.0" prefWidth="540.0" style="-fx-text-fill: #ff5050;" text="%error.nocourse" textAlignment="CENTER" textFill="#e11010" visible="false">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+      <ImageView fitHeight="68.0" fitWidth="350.0" layoutX="300.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/titulo.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="161.0" fitWidth="161.0" layoutX="110.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/logo_min.png" />
+         </image>
+      </ImageView>
+		<Label fx:id="lblUser" layoutX="310.0" layoutY="75.0" prefHeight="32.0" prefWidth="410.0" text="Nombre de usuario">
+			<font>
+				<Font size="22.0" />
+			</font>
+		</Label>
+      <AnchorPane fx:id="anchorPane" layoutX="75.0" layoutY="175.0" prefHeight="350.0" prefWidth="650.0">
+         <children>
+            <TabPane fx:id="tabPane" prefHeight="290.0" prefWidth="650.0" styleClass="tab-pane-class" tabClosingPolicy="UNAVAILABLE">
+              <tabs>
+                <Tab fx:id="tabCache" text="%text.cache">
+                     <content>
+                  		<ListView fx:id="listCourses" styleClass="list-view-intro" stylesheets="@/css/style.css">
+      						<placeholder>
+                  				<Label text="%label.never" />
+              				</placeholder>
+                           <cursor>
+                              <Cursor fx:constant="DEFAULT" />
+                           </cursor>
+                        </ListView>
+                     </content>
+                  </Tab>
+                  <Tab fx:id="tabPreviousCache" text="%text.previouscache">
+                     <content>
+                        <ListView fx:id="listViewPreviousCourses" styleClass="list-view-intro" stylesheets="@/css/style.css">
+                           <placeholder>
+                              <Label text="%label.never" />
+                           </placeholder>
+                           <cursor>
+                              <Cursor fx:constant="DEFAULT" />
+                           </cursor>
+                        </ListView>
+                     </content>
+                  </Tab>
+              </tabs>
+            </TabPane>
+            <Label layoutX="70.0" layoutY="310.0" prefHeight="21.0" prefWidth="258.0" text="%label.lastupdate" />
+            <Label fx:id="lblDateUpdate" layoutX="300.0" layoutY="310.0" prefHeight="21.0" prefWidth="146.0" />
+         </children>
+      </AnchorPane>
+		<Button fx:id="btnEntrar" defaultButton="true" layoutX="200.0" layoutY="540.0" mnemonicParsing="false" onAction="#enterCourse" prefHeight="39.0" prefWidth="86.0" styleClass="accept_button" stylesheets="@/css/style.css" text="%btn.enter">
+			<font>
+				<Font size="19.0" />
+			</font>
+			<cursor>
+				<Cursor fx:constant="HAND" />
+			</cursor>
+		</Button>
+      <Button fx:id="btnRemove" layoutX="500.0" layoutY="540.0" mnemonicParsing="false" onAction="#removeCourse" prefHeight="39.0" prefWidth="86.0" style="-fx-font-size: 16;" stylesheets="@/css/style.css" text="%btn.remove">
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+         <font>
+            <Font size="19.0" />
+         </font>
+         <styleClass>
+            <String fx:value="rich-blue" />
+            <String fx:value="danger_button" />
+         </styleClass>
+      </Button>
+      <GridPane layoutX="310.0" layoutY="110.0" prefHeight="55.0" prefWidth="410.0">
+         <columnConstraints>
+            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="60.0" />
+            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="184.0" minWidth="105.0" prefWidth="184.0" />
+            <ColumnConstraints halignment="LEFT" hgrow="NEVER" />
+            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label contentDisplay="BOTTOM" text="%label.loggedin" wrapText="true" GridPane.rowIndex="1" />
+            <Label alignment="CENTER_RIGHT" contentDisplay="CENTER" text="%label.host" wrapText="true" GridPane.rowIndex="2" />
+            <Label fx:id="labelLoggedIn" text="Label" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="labelHost" text="Label" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Button mnemonicParsing="false" onAction="#logOut" styleClass="accept_button" text="%button.logout" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="TOP" />
+            <Label fx:id="conexionLabel" text="Label" wrapText="true" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+            <Label onMouseClicked="#importCourse" GridPane.columnIndex="2" GridPane.rowIndex="1">
+               <graphic>
+                  <ImageView pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/file-import-solid.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip text="%tooltip.importcourse" />
+               </tooltip>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Label>
+            <Label onMouseClicked="#exportCourse" GridPane.columnIndex="2" GridPane.rowIndex="2">
+               <graphic>
+                  <ImageView pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/file-export-solid.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip text="%tooltip.exportcourse" />
+               </tooltip>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Label>
+         </children>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
+      </GridPane>
+      <Hyperlink layoutX="5.0" layoutY="15.0" onAction="#aboutApp" prefWidth="115.0" text="%about_app" wrapText="true" />
+	</children>
+</AnchorPane>

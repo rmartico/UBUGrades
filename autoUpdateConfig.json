@@ -1,0 +1,9 @@
+{
+  "checkUrl": "https://api.github.com/repos/yjx0003/ubumonitor/releases",
+  "pattern": "^UBUMonitor.+.jar$",
+  "vmArgs": [
+        "-Xmx1G",
+        "-XX:NewRatio=8",
+        "-Dlog4j.configuration=file:src/main/resources/log4j.properties"
+    ]
+}

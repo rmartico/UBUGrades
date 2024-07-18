@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+
+<head>
+   <title>Charts</title>
+   <link rel="stylesheet" type="text/css" href="../css/tabulator.css" />
+   <link rel="stylesheet" type="text/css" href="../css/chart.css" />
+   <link rel="stylesheet" type="text/css" href="../css/vis-timeline-graph2d.min.css" />
+   <script type="text/javascript" src="./lib/moment-with-locale.js"></script>
+   <script type="text/javascript" src="./lib/Chart.js"></script>
+   <script type="text/javascript" src="./lib/color-hash.js"></script>
+   <script type="text/javascript" src="./lib/chartjs-chart-box-and-violin-plot.js"></script>
+   <script type="text/javascript" src="./lib/chartjs-plugin-datalabels.js"></script>
+   <script type="text/javascript" src="./lib/tabulator.js"></script>
+   <script type="text/javascript" src="./lib/visNetwork.js"></script>
+   <script type="text/javascript" src="./lib/visTimeline.js"></script>
+   <script type="text/javascript" src="./lib/plotly.js"></script>
+   <script type="text/javascript" src="./locales/plotly-es.js"></script>
+   <script type="text/javascript" src="./lib/wheelzoom.js"></script>
+   <script type="text/javascript">
+      Chart.defaults.global.animation.duration = 0;
+      Chart.defaults.global.elements.line.fill = false;
+      Chart.defaults.global.elements.line.tension = 0;
+      Chart.defaults.global.maintainAspectRatio = false;
+      Chart.defaults.global.hover.animationDuration = 0;
+      Chart.defaults.global.legend.labels.usePointStyle = true;
+      Chart.defaults.global.legend.position = "top";
+      Chart.defaults.global.onClick = function (event, array) {
+         let element = myChart.getElementsAtEventForMode(event, "point", { intersect: false });
+         if (element.length > 0) {
+            javaConnector.dataPointSelection(element[counter % element.length]._datasetIndex);
+            counter++;
+         }
+      };
+
+      Chart.plugins.register({
+         beforeDraw: function (chartInstance) {
+            var ctx = chartInstance.chart.ctx;
+            ctx.fillStyle = chartInstance.config.options.chartBackgroundColor;
+            ctx.fillRect(0, 0, chartInstance.chart.width, chartInstance.chart.height);
+         }
+      });
+
+      Chart.defaults.scale.ticks.beginAtZero = true;
+      Chart.defaults.scale.ticks.precision = 0;
+      Chart.defaults.scale.ticks.suggestedMin = 0;
+      Chart.defaults.scale.autoSkip = true;
+      Chart.defaults.global.plugins.datalabels.display = false
+
+      var activityCompletionIcons = {
+         000:"",
+         //010:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAALVBMVEUAAACXl5eSkpKVlZWVlZWTk5OWlpaTk5OVlZWUlJSUlJSUlJSUlJSUlJT///8jYXWRAAAADXRSTlMAGxwdSElLtLa34uPkFcFswAAAAAFiS0dEDm+9ME8AAAAzSURBVAjXY8i5CwZbGfZCGLcY7hYyAIHGXYa7CiAGM5DBAAaUM+AGNoEYlncRlkZDGEsAm6swWTXh3WgAAAAASUVORK5CYII=",
+         //011:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJ1BMVEUAAAD/JCT/IyP/Jyf/Jib/Jib/Jyf/Jyf/Jyf/Jyf/Jyf/Jyf////6IFoRAAAAC3RSTlMAHB1ISUq1trfi4wFJ/lwAAAABYktHRAyBs1FjAAAAM0lEQVQI12OI2g0GSxhWQxg7GXYnMgCB+G6G3QIgBhOQwQAGlDPgBhaBGBq7EZZ6QhiTAYQpKOmAKbARAAAAAElFTkSuQmCC",
+         //020:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAALVBMVEUAAACXl5eSkpKVlZWVlZWTk5OWlpaTk5OVlZWUlJSUlJSUlJSUlJSUlJT///8jYXWRAAAADXRSTlMAGxwdSElLtLa34uPkFcFswAAAAAFiS0dEDm+9ME8AAAA+SURBVAjXY8i5e+HuXd67Wxn2Qhi3GO4WMgCBxl2GuwogBjOQwQAGUAqJeRcfA4tiuIFNIIblXYSl0RDGEgCu3ylx1822FwAAAABJRU5ErkJggg==",
+         //021:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJ1BMVEUAAAD/JCT/IyP/Jyf/Jib/Jib/Jyf/Jyf/Jyf/Jyf/Jyf/Jyf////6IFoRAAAAC3RSTlMAHB1ISUq1trfi4wFJ/lwAAAABYktHRAyBs1FjAAAAPklEQVQI12OI2r1h927u3UsYVkMYOxl2JzIAgfhuht0CIAYTkMEABlAKibkbHwOLYriBRSCGxm6EpZ4QxmQA4ykjEVYneS8AAAAASUVORK5CYII=",
+         110:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAgVBMVEUAAABmmf9tkv9mmeZmmfKQkJBik+uXl5eSkpKVlZVkk/CWlpaVlZWTk5Njku6WlpZilO+Tk5Nhk+5jku9ik+9ik+1ilO9hk+2Tk5OVlZWUlJRiku6UlJSUlJSUlJRiku6UlJRik+6UlJRik+5ik+5ik+5ik+6UlJRik+6UlJT///+cZB9xAAAAKHRSTlMABQcKFBcaGxwdIS5ISUtLUWF7fH+Aq620trfR4uPk6+vs9PX3+Pr7hGL/3QAAAAFiS0dEKlO+1J4AAAB/SURBVBjTVc/ZFoIwDEXROCCiAgVnKYMDevP/P2gTLZS8nf2QlVDecDB1SnXYn4cl5ktM/4niReFg7Ztmp5dxMPYZaAOQRqmwmfs+bgX2qJa+O4E7UK20qWMB8wae2lKyI+td4kADqEj/QA4zbSmdKFyHU5Obg8lzzJbSidjdF93xF0PlG5MCAAAAAElFTkSuQmCC",
+         111:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAgVBMVEUAAABmmf9tkv9mgMxmmfL/LCxik+v/Jib/JCT/IyNkk/D/Jyf/Jyf/JiZjku7/JSVilO//Jydkk+5jku9ik+9kk+1ilO9jk+3/KCj/Jyf/Jydjku7/Jyf/Jyf/Jydjku7/Jydjk+7/Jydjk+5jk+5jk+5jk+7/Jydjk+7/Jyf///8RD70vAAAAKHRSTlMABQcKFBcaGxwdIS5ISUtLUWF7fH+Aq620trfR4uPk6+vs9PX3+Pr7hGL/3QAAAAFiS0dEKlO+1J4AAAB/SURBVBjTVc/ZFoIwDEXROCCiAgVnKYMDevP/P2gTLZS8nf2QlVDecDB1SnXYn4cl5ktM/4niReFg7Ztmp5dxMPYZaAOQRqmwmfs+bgX2qJa+O4E7UK20qWMB8wae2lKyI+td4kADqEj/QA4zbSmdKFyHU5Obg8lzzJbSidjdF93xF0PlG5MCAAAAAElFTkSuQmCC",
+         120:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAgVBMVEUAAABmmf9tkv9mmeZmmfKQkJBik+uXl5eSkpKVlZVkk/CWlpaVlZWTk5Njku6WlpZilO+Tk5Nkk+5jku9ik+9kk+1ilO9jk+2Tk5OVlZWUlJRjku6UlJSUlJSUlJRjku6UlJRjk+6UlJRjk+5jk+5jk+5jk+6UlJRjk+6UlJT////N/X30AAAAKHRSTlMABQcKFBcaGxwdIS5ISUtLUWF7fH+Aq620trfR4uPk6+vs9PX3+Pr7hGL/3QAAAAFiS0dEKlO+1J4AAACESURBVBjTVY9JEoIADATHFVFRRBAVENyn//9BD4BiDqnqPiQz2l4A0a0qUsVAvG+l4Biom1kw2QkWPWt0eMSCH+d2Lf2xE4G0HPecrQTau5j23Ah0tYt5bjtTg0Dxy77bztS/2DxtO21vQ2fSjtpgcZ1IUgiC0zdqeIb/clAqqoaiXH8AuFEVBSv6KOoAAAAASUVORK5CYII=",
+         121:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAgVBMVEUAAABmmf9tkv9mgMxmmfL/LCxik+v/Jib/JCT/IyNkk/D/Jyf/Jyf/JiZjku7/JSVilO//Jydkk+5jku9ik+9kk+1ilO9jk+3/KCj/Jyf/Jydjku7/Jyf/Jyf/Jydjku7/Jydjk+7/Jydjk+5jk+5jk+5jk+7/Jydjk+7/Jyf///8RD70vAAAAKHRSTlMABQcKFBcaGxwdIS5ISUtLUWF7fH+Aq620trfR4uPk6+vs9PX3+Pr7hGL/3QAAAAFiS0dEKlO+1J4AAACESURBVBjTVY9JEoIADATHFVFRRBAVENyn//9BD4BiDqnqPiQz2l4A0a0qUsVAvG+l4Biom1kw2QkWPWt0eMSCH+d2Lf2xE4G0HPecrQTau5j23Ah0tYt5bjtTg0Dxy77bztS/2DxtO21vQ2fSjtpgcZ1IUgiC0zdqeIb/clAqqoaiXH8AuFEVBSv6KOoAAAAASUVORK5CYII=",
+         220:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAgVBMVEUAAABmmTNtkiSAszNzpiaQkJB2nSeXl5eSkpKVlZV8oieWlpaVlZWTk5N6oCmWlpZ4oSmTk5N4oid5oCd4oSh6oSh5oSh5oSiTk5OVlZWUlJR5oSiUlJSUlJSUlJR6oSiUlJR5oSiUlJR5oSh5oSh5oSh5oSiUlJR5oSiUlJT///9lfe2zAAAAKHRSTlMABQcKFBcaGxwdIS5ISUtLUWF7fH+Aq620trfR4uPk6+vs9PX3+Pr7hGL/3QAAAAFiS0dEKlO+1J4AAACESURBVBjTVY9JEoIADATHFVFRRBAVENyn//9BD4BiDqnqPiQz2l4A0a0qUsVAvG+l4Biom1kw2QkWPWt0eMSCH+d2Lf2xE4G0HPecrQTau5j23Ah0tYt5bjtTg0Dxy77bztS/2DxtO21vQ2fSjtpgcZ1IUgiC0zdqeIb/clAqqoaiXH8AuFEVBSv6KOoAAAAASUVORK5CYII=",
+         320:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAhFBMVEUAAAD/AAD/AAD/VVX/MzP/OTmXl5eSkpKVlZX/Qz3/Qj7/QT2VlZWTk5OWlpb/QDz/QD3/Pzz/QTv/QD3/QDz/Pzz/QTz/QDz/QTz/QTz/QTz/QDz/PzyTk5OVlZWUlJT/Pzz/QDz/QDuUlJSUlJSUlJT/QDz/QDz/QDyUlJT/QDz///9mHtYmAAAAKXRSTlMAAQIDBQkbHB0uPkdISUt8i5GSk5SVlpiipqqrrbS2t83U3+Lj5Obo96gwt3UAAAABYktHRCskueQIAAAAjklEQVQY02WPRw7CQBAEe7HB5GCCCUs2mK7/P5CDF4TEHEaakqZVrenDtpxWPVHtX+C77GNPaYqTLbsYNmWQQtmM+rZsNVCFUMGra0vSAqgq4CBJtsIKAGKu9iWRmOsL1gAx+4D2ho3Uhs6BfQRmKfQK2yyPcFESey47Ur67DVqxU/FR75/t/3KT+hfcx2+c3BmZuGqjvQAAAABJRU5ErkJggg==",
+      
+      };
+
+      var counter = 0;
+      var height = "93%";
+      var locale = 'en-UK';
+
+      var colorHash;
+      var ctx;
+      var myChart;
+      var table;
+      var visNetwork;
+      var visTimeline;
+      var userPhotos;
+
+      function createChartDivs() {
+         //------------------------------------------Variables globales-------------------------------------------------------------
+
+         //
+         colorHash = new ColorHash();
+         ctx = document.getElementById('myChart');
+
+         myChart = new Chart(ctx, {
+            type: "line",
+            data: {
+               labels: [],
+               datasets: []
+            },
+            options: {
+               tab: "grade_tabs",
+               button: "btnLine",
+               typeGraph: "line"
+            }
+         });
+
+         table = new Tabulator("#tabulatorDiv", {
+
+            tab: "activity_tabs",
+            button: "ACTIVITIES_TABLE",
+            invalidOptionWarnings: false,
+            height: height,
+            //placeholder: "No data",
+            tooltipsHeader: true,
+            virtualDom: true,
+            layout: "fitColumns", //fit columns to width of table (optional)
+            rowClick: function (e, row) {
+               javaConnector.dataPointSelection(row.getPosition());
+
+            },
+         });
+
+
+         visNetwork = new vis.Network(document.getElementById('visNetworkDiv'), {}, {});
+         visTimeline = new vis.Timeline(document.getElementById('visTimelineDiv'), {}, {});
+         wheelzoom(document.getElementById('wordCloud'));
+         document.getElementById('wordCloud').ondblclick = function () { document.getElementById('wordCloud').dispatchEvent(new CustomEvent('wheelzoom.reset')) };
+
+      }
+
+      //------------------------------------------Funciones------------------------------------------------------------------
+
+
+      function imageButton(id, value) {
+         if (value) {
+            document.getElementById(id).style.backgroundImage = 'url(./../img/visibility.png)';
+
+         } else {
+            document.getElementById(id).style.backgroundImage = 'url(./../img/visibility_off.png)';
+         }
+      }
+
+      function displayLegendButton(value) {
+
+         document.getElementById('btnLegend').style.display = value ? "inline" : "none";
+      }
+
+      function displayGroupButton(value) {
+         document.getElementById('btnGroupMean').style.display = value ? "inline" : "none";
+      }
+
+      function displayGeneralButton(value) {
+         document.getElementById('btnMean').style.display = value ? "inline" : "none";
+      }
+
+      function displayButton(element, value) {
+         document.getElementById(element).style.display = value ? "block" : "none";
+      }
+
+      function displayChartsButtons(div_id, type, listCharts) {
+
+         let tabs = document.getElementById(div_id);
+         if (tabs) {
+            let children = tabs.children;
+            for (let i = 0; i < children.length; i++) {
+               if (children[i].tagName == "BUTTON") {
+                  children[i].style.display = div_id == type && listCharts.includes(children[i].id) ? "inline" : "none";
+               }
+
+            }
+         }
+      }
+
+      function disableTab(div_id, noDisable) {
+         let tabs = document.getElementById(div_id);
+         if (document.getElementById(noDisable).disabled == false && tabs) {
+
+            let children = tabs.children;
+            for (i = 0; i < children.length; i++) {
+               if (children[i].tagName == "BUTTON") {
+                  children[i].disabled = false;
+               }
+
+            }
+            document.getElementById(noDisable).disabled = true;
+         }
+
+
+      }
+
+
+
+      function updateChartjs(dataset, options) {
+         hiddenCharts("chartjs", options);
+
+         if (!options.legend) {
+            options.legend = {};
+         }
+         options.legend.display = options.legendActive;
+         if (myChart.config.type == options.typeGraph) {
+            myChart.data = dataset;
+            myChart.options = options;
+            myChart.update();
+
+
+         } else {
+            myChart.destroy();
+            myChart = new Chart(ctx, {
+               type: options.typeGraph,
+               data: dataset,
+               options: options
+            });
+         }
+
+      }
+
+      function updateTabulator(data, options) {
+
+         hiddenCharts("tabulator", options);
+
+
+         table.destroy()
+         table = new Tabulator("#tabulatorDiv", options);
+         table.setColumns(data.columns);
+         table.setData(data.tabledata).then(function () {
+
+            table.redraw();
+         })
+
+
+      }
+
+      function updateVisNetwork(data, options) {
+         hiddenCharts("visNetwork", options);
+         if (visNetwork !== null) {
+            visNetwork.destroy();
+            visNetwork = null;
+         }
+         visNetwork = new vis.Network(document.getElementById('visNetworkDiv'), data, options.options);
+         visNetwork.on("stabilizationIterationsDone", function () {
+            visNetwork.setOptions({ physics: { enabled: options.physicsAfterDraw == undefined || options.physicsAfterDraw } });
+         });
+
+      }
+
+
+      function updateVisTimeline(data, options) {
+         hiddenCharts("visTimeline", options);
+
+
+         visTimeline.setOptions(options.options);
+         visTimeline.setData(data);
+
+
+      }
+
+      function updateWordCloud(image, options) {
+         hiddenCharts("wordCloud", options);
+         wordCloud = document.getElementById('wordCloud');
+
+
+         wordCloud.src = image;
+
+
+
+      }
+
+      function updatePlotly(plot, options) {
+         hiddenCharts("plotly", options);
+
+         plot.layout.showlegend = options.useLegend && options.legendActive;
+         if (options.config) {
+            plot.config = options.config;
+         }
+
+         Plotly.react('plotlyDiv', plot);
+
+
+         if (options.onClick) {
+            document.getElementById('plotlyDiv').removeAllListeners('plotly_click');
+            document.getElementById('plotlyDiv').on('plotly_click', options.onClick);
+         }
+
+
+
+      }
+
+      function hiddenCharts(value, options) {
+
+         displayButton('chart-container', value == "chartjs");
+         displayButton('tabulatorDiv', value == "tabulator");
+         displayButton('visNetworkDiv', value == "visNetwork");
+         displayButton('visTimelineDiv', value == "visTimeline");
+         displayButton('wordCloud', value == "wordCloud");
+         displayButton('plotlyDiv', value == "plotly");
+         displayButton('plotlyEmptyDiv', value == "plotly");
+
+         manageButtons(options.tab, options.listCharts);
+         disableTab(options.tab, options.button);
+
+         displayLegendButton(options.useLegend);
+         displayGroupButton(options.useGroup);
+         displayGeneralButton(options.useGeneral);
+      }
+
+      function clearChartjs() {
+         myChart.destroy();
+         myChart = new Chart(ctx, {
+            type: "bar",
+            data: {
+               labels: [],
+               datasets: []
+            },
+            options: {
+               type: "line",
+               data: {
+                  labels: [],
+                  datasets: []
+               },
+               options: {
+                  tab: "grade_tabs",
+                  button: "btnLine",
+                  typeGraph: "line"
+               }
+            }
+         });
+      }
+
+      function clearTabulator() {
+         table.clearData();
+      }
+
+
+      function manageButtons(type, listCharts) {
+
+
+         displayChartsButtons("GRADES", type, listCharts);
+         displayChartsButtons("LOGS", type, listCharts);
+         displayChartsButtons("ACTIVITY_COMPLETION", type, listCharts);
+         displayChartsButtons("RISK", type, listCharts);
+         displayChartsButtons("FORUM", type, listCharts);
+         displayChartsButtons("CALENDAR_EVENT", type, listCharts);
+
+      }
+
+      function clearVisNetwork() {
+         visNetwork.setData([]);
+      }
+
+      function clearVisTimeline() {
+         visTimeline.setData([]);
+      }
+
+      //Funcion que muestra u oculta la leyenda del gráfico
+      function hideLegend() {
+         imageButton("btnLegend", javaConnector.toggleLegend());
+
+         javaConnector.updateChart();
+      }
+
+      function showGeneralMean() {
+
+         imageButton("btnMean", javaConnector.toggleGeneral());
+
+         javaConnector.updateChart();
+      }
+
+      function showGroupMean() {
+
+         imageButton("btnGroupMean", javaConnector.toggleGroup());
+
+         javaConnector.updateChart();
+      }
+
+
+      function exportChartjs() {
+         myChart.update();
+         return myChart.toBase64Image();
+      }
+
+
+      function exportCanvas(id) {
+         return document.getElementById(id).toDataURL();
+      }
+
+      function generateButtons(buttons) {
+         for (const value of buttons) {
+            let button = document.createElement("BUTTON");
+            button.id = value.id;
+            button.innerText = value.text;
+            button.className = "btn";
+            button.setAttribute("onClick", "javaConnector.updateChartFromJS(this.id);");
+            type = document.getElementById(value.type)
+
+            if (!type) {
+               all_tabs = document.getElementById("all_tabs");
+
+               type = document.createElement("DIV");
+               type.id = value.type;
+               type.className = "pestañas";
+               all_tabs.insertBefore(type, document.getElementById("tabs_options"));
+            }
+
+
+            type.appendChild(button);
+         }
+      }
+
+      // Modifica el valor de los inputs segun el idioma pasado
+      function getI18n(item) {
+         document.getElementById(item).value = javaConnector.getI18n(item);
+      }
+
+      function translate(id, text) {
+         document.getElementById(id).innerText = text;
+      }
+
+
+
+      function setLocale(newLocale) {
+         locale = newLocale;
+         moment.locale(newLocale);
+         Plotly.setPlotConfig({ locale: newLocale });
+      }
+      function colorRGB(color) {
+         let colors = colorHash.rgb(color);
+         return "rgb(" + colors[0] + "," + colors[1] + "," + colors[2] + ")";
+      }
+
+      function colorRGBA(color, alpha) {
+         let colors = colorHash.rgb(color);
+         return "rgba(" + colors[0] + "," + colors[1] + "," + colors[2] + "," + alpha + ")";
+      }
+      //Funcion que devuelve un color en formato hexadecimal
+      //en base a el string que se le pasa
+      function colorHEX(color) {
+         return colorHash.hex(color);
+      }
+
+      function toPercentage(value, max) {
+         return value + '/' + max + ' (' + (value / max).toLocaleString(locale, { style: 'percent', maximumFractionDigits: 2 }) + ")";
+      }
+   </script>
+</head>
+
+<body>
+   <div id="all_tabs" class="controles">
+      <div id="tabs_options" class="opciones">
+         <button value="Leyenda" class="btn" id="btnLegend" onclick="hideLegend()"></button>
+         <button value="Media General" class="btn" id="btnMean" onclick="showGeneralMean()"></button>
+         <button class="btn" id="btnGroupMean" onclick="showGroupMean()"></button>
+      </div>
+   </div>
+   <div id="plotlyEmptyDiv" style="visibility: hidden;">for some reason, plotly fill all window</div>
+   <div id="plotlyDiv" style="height: 93vh"></div>
+   <div id="chart-container" class="chart-container">
+      <canvas id="myChart"></canvas>
+   </div>
+   <div id="tabulatorDiv"></div>
+   <div id="visNetworkDiv" class="visDiv"></div>
+   <div id="visTimelineDiv" class="visDiv"></div>
+   <img class="center" id="wordCloud">
+</body>
+
+</html>
